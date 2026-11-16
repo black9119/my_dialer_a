@@ -1,0 +1,39 @@
+buildscript {
+    ext.kotlin_version = '1.9.22'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.4'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+    
+    // 👇 核心：强行给所有 Android Library 插件注入 AndroidX 依赖
+    // 解决 flutter_ble_peripheral 找不到 RequiresApi/Log 的问题
+    project.plugins.withId('com.android.library') {
+        project.dependencies {
+            implementation 'androidx.annotation:annotation:1.7.1'
+            implementation 'androidx.core:core-ktx:1.12.0'
+        }
+    }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
